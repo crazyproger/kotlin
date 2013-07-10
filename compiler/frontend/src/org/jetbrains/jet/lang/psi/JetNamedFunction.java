@@ -19,10 +19,15 @@ package org.jetbrains.jet.lang.psi;
 import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.navigation.ItemPresentationProviders;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDocCommentOwner;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiModifier;
+import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.stubs.IStubElementType;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.JetNodeTypes;
@@ -35,7 +40,8 @@ import org.jetbrains.jet.lexer.JetTokens;
 import java.util.Collections;
 import java.util.List;
 
-public class JetNamedFunction extends JetTypeParameterListOwnerStub<PsiJetFunctionStub> implements JetFunction, JetWithExpressionInitializer {
+public class JetNamedFunction extends JetTypeParameterListOwnerStub<PsiJetFunctionStub>
+        implements JetFunction, JetWithExpressionInitializer, PsiDocCommentOwner {
     public JetNamedFunction(@NotNull ASTNode node) {
         super(node);
     }
@@ -191,5 +197,29 @@ public class JetNamedFunction extends JetTypeParameterListOwnerStub<PsiJetFuncti
     public boolean isLocal() {
         PsiElement parent = getParent();
         return !(parent instanceof JetFile || parent instanceof JetClassBody);
+    }
+
+    @Nullable
+    @Override
+    public PsiDocComment getDocComment() {
+        // todo if we met another *not* doc comment we should stop
+        return PsiTreeUtil.getPrevSiblingOfType(this, PsiDocComment.class);
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return JetPsiUtil.isDeprecated(this);
+    }
+
+    @Nullable
+    @Override
+    public PsiClass getContainingClass() {
+        return getStubOrPsiParentOfType(PsiClass.class);
+    }
+
+    @Override
+    public boolean hasModifierProperty(@PsiModifier.ModifierConstant @NonNls @NotNull String name) {
+        JetModifierList list = getModifierList();
+        return list != null && list.hasModifierProperty(name);
     }
 }

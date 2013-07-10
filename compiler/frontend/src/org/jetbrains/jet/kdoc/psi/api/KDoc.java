@@ -16,8 +16,8 @@
 
 package org.jetbrains.jet.kdoc.psi.api;
 
-import com.intellij.psi.PsiComment;
+import com.intellij.psi.javadoc.PsiDocComment;
 
 // Don't implement JetElement (or it will be treated as statement)
-public interface KDoc extends PsiComment {
+public interface KDoc extends PsiDocComment {
 }

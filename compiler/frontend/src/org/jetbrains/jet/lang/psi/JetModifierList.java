@@ -18,16 +18,27 @@ package org.jetbrains.jet.lang.psi;
 
 import com.google.common.collect.Lists;
 import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiModifierList;
+import com.intellij.psi.impl.CheckUtil;
+import com.intellij.psi.impl.source.tree.CompositeElement;
+import com.intellij.psi.tree.IElementType;
+import com.intellij.util.IncorrectOperationException;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.JetNodeTypes;
+import org.jetbrains.jet.lang.parsing.JetParsing;
+import org.jetbrains.jet.lexer.JetKeywordToken;
 import org.jetbrains.jet.lexer.JetToken;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class JetModifierList extends JetElementImpl {
+public class JetModifierList extends JetElementImpl  implements PsiModifierList {
     public JetModifierList(@NotNull ASTNode node) {
         super(node);
     }
@@ -43,15 +54,16 @@ public class JetModifierList extends JetElementImpl {
     }
 
     @NotNull
-    public List<JetAnnotation> getAnnotations() {
-        return findChildrenByType(JetNodeTypes.ANNOTATION);
+    public JetAnnotation[] getJetAnnotations() {
+        List<JetAnnotation> byType = findChildrenByType(JetNodeTypes.ANNOTATION);
+        return byType.toArray(new JetAnnotation[byType.size()]);
     }
 
     @NotNull
     public List<JetAnnotationEntry> getAnnotationEntries() {
         List<JetAnnotationEntry> entries = findChildrenByType(JetNodeTypes.ANNOTATION_ENTRY);
         List<JetAnnotationEntry> answer = entries.isEmpty() ? null : Lists.newArrayList(entries);
-        for (JetAnnotation annotation : getAnnotations()) {
+        for (JetAnnotation annotation : getJetAnnotations()) {
             if (answer == null) answer = new ArrayList<JetAnnotationEntry>();
             answer.addAll(annotation.getEntries());
         }
@@ -70,5 +82,57 @@ public class JetModifierList extends JetElementImpl {
             node = node.getTreeNext();
         }
         return null;
+    }
+
+    @Override
+    public boolean hasModifierProperty(@PsiModifier.ModifierConstant @NotNull @NonNls String name) {
+        return hasModifier((JetKeywordToken) JetParsing.MODIFIER_KEYWORD_MAP.get(name));
+    }
+
+    @Override
+    public boolean hasExplicitModifier(@PsiModifier.ModifierConstant @NotNull @NonNls String name) {
+        CompositeElement tree = (CompositeElement) getNode();
+        IElementType type = JetParsing.MODIFIER_KEYWORD_MAP.get(name);
+        return tree.findChildByType(type) != null;
+    }
+
+    @Override
+    public void setModifierProperty(
+            @PsiModifier.ModifierConstant @NotNull @NonNls String name, boolean value
+    ) throws IncorrectOperationException {
+        checkSetModifierProperty(name, value);
+        // todo implement
+    }
+
+    @Override
+    public void checkSetModifierProperty(
+            @PsiModifier.ModifierConstant @NotNull @NonNls String name, boolean value
+    ) throws IncorrectOperationException {
+        CheckUtil.checkWritable(this);
+    }
+
+    // todo comments
+    @NotNull
+    @Override
+    public PsiAnnotation[] getAnnotations() {
+        return PsiAnnotation.EMPTY_ARRAY;
+    }
+
+    @NotNull
+    @Override
+    public PsiAnnotation[] getApplicableAnnotations() {
+        return PsiAnnotation.EMPTY_ARRAY;
+    }
+
+    @Nullable
+    @Override
+    public PsiAnnotation findAnnotation(@NotNull @NonNls String qualifiedName) {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public PsiAnnotation addAnnotation(@NotNull @NonNls String qualifiedName) {
+        throw new NotImplementedException();
     }
 }

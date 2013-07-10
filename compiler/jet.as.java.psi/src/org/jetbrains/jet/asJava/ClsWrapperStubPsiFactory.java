@@ -25,6 +25,7 @@ import com.intellij.psi.impl.java.stubs.*;
 import com.intellij.psi.stubs.StubBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.asJava.wrappers.JetClsMethodImpl;
+import org.jetbrains.jet.asJava.wrappers.JetClsModifierListImpl;
 
 class ClsWrapperStubPsiFactory extends StubPsiFactory {
     public static final Key<PsiElement> ORIGIN_ELEMENT = Key.create("ORIGIN_ELEMENT");
@@ -105,7 +106,12 @@ class ClsWrapperStubPsiFactory extends StubPsiFactory {
 
     @Override
     public PsiModifierList createModifierList(PsiModifierListStub stub) {
-        return delegate.createModifierList(stub);
+        PsiElement origin = ((StubBase) stub).getUserData(ORIGIN_ELEMENT);
+        if (origin == null) {
+            return delegate.createModifierList(stub);
+        }
+
+        return new JetClsModifierListImpl(stub, origin);
     }
 
     @Override

@@ -17,9 +17,16 @@
 package org.jetbrains.jet.kdoc.psi.impl;
 
 import com.intellij.lang.Language;
+import com.intellij.psi.PsiDocCommentOwner;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LazyParseablePsiElement;
+import com.intellij.psi.javadoc.PsiDocComment;
+import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.PsiTreeUtil;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.kdoc.lexer.KDocTokens;
 import org.jetbrains.jet.kdoc.psi.api.KDoc;
 import org.jetbrains.jet.lexer.JetTokens;
@@ -44,5 +51,35 @@ public class KDocImpl extends LazyParseablePsiElement implements KDoc {
     @Override
     public IElementType getTokenType() {
         return JetTokens.DOC_COMMENT;
+    }
+
+    @Nullable
+    @Override
+    public PsiDocCommentOwner getOwner() {
+        return PsiTreeUtil.getNextSiblingOfType(this, PsiDocCommentOwner.class);
+    }
+
+    @NotNull
+    @Override
+    public PsiElement[] getDescriptionElements() {
+        return new PsiElement[0];
+    }
+
+    @NotNull
+    @Override
+    public PsiDocTag[] getTags() {
+        return PsiDocTag.EMPTY_ARRAY;
+    }
+
+    @Nullable
+    @Override
+    public PsiDocTag findTagByName(@NonNls String name) {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public PsiDocTag[] findTagsByName(@NonNls String name) {
+        return PsiDocTag.EMPTY_ARRAY;
     }
 }
